@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gym plan</title>
+<meta name="theme-color" content="#e8ecef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12181d" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gym plan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #e8ecef;
+    --surface: #f6f8f9;
+    --ink: #16222c;
+    --steel: #586773;
+    --line: #c9d2d8;
+    --accent: #1f5fbf;
+    --accent-ink: #ffffff;
+    --done: #1f7a4d;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12181d;
+      --surface: #1b232a;
+      --ink: #e9eef1;
+      --steel: #93a2ad;
+      --line: #2e3a43;
+      --accent: #5b9bff;
+      --accent-ink: #0c1722;
+      --done: #4fc88a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12181d;
+    --surface: #1b232a;
+    --ink: #e9eef1;
+    --steel: #93a2ad;
+    --line: #2e3a43;
+    --accent: #5b9bff;
+    --accent-ink: #0c1722;
+    --done: #4fc88a;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.4;
+    padding-bottom: 96px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 22px 0 10px; }
+  h1 {
+    font-family: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    margin: 0 0 4px;
+  }
+  .sub { color: var(--steel); margin: 0; }
+
+  nav.tabs {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    background: var(--bg);
+    z-index: 5;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .tabs-inner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tab {
+    appearance: none;
+    border: 1.5px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 8px 4px 7px;
+    font: inherit;
+    cursor: pointer;
+    text-align: center;
+    min-height: 56px;
+  }
+  .tab .d { display: block; font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; font-size: 22px; line-height: 1.05; }
+  .tab .n { display: block; font-size: 13px; color: var(--steel); }
+  .tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .tab[aria-selected="true"] .n { color: var(--bg); opacity: 0.8; }
+  .tab:focus-visible, .set:focus-visible, .btn:focus-visible, .rest:focus-visible, input:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .day-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 18px 0 6px; }
+  .day-head h2 { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; font-size: 30px; margin: 0; }
+  .progress { color: var(--steel); font-size: 15px; white-space: nowrap; }
+  .day-note { color: var(--steel); margin: 0 0 10px; font-size: 15px; }
+
+  .ex { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin: 10px 0; }
+  .ex.complete { border-color: var(--done); }
+  .ex-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .ex-name { font-weight: 600; margin: 0; font-size: 18px; line-height: 1.25; }
+  .target { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 600; font-size: 20px; white-space: nowrap; color: var(--accent); }
+  .ex-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .sets { display: flex; gap: 8px; flex-wrap: wrap; }
+  .set {
+    appearance: none;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: 2px solid var(--steel);
+    background: transparent;
+    color: var(--steel);
+    font: inherit; font-weight: 600; font-size: 16px;
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .set[aria-pressed="true"] { background: var(--done); border-color: var(--done); color: var(--accent-ink); }
+  .wt { display: flex; align-items: center; gap: 8px; }
+  .wt label { font-size: 14px; color: var(--steel); }
+  .wt input {
+    width: 84px; height: 44px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit; font-size: 17px;
+    padding: 0 10px;
+  }
+
+  .btn {
+    appearance: none;
+    border: 1.5px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font: inherit; font-weight: 500;
+    cursor: pointer;
+    min-height: 46px;
+  }
+  .actions { display: flex; gap: 10px; margin: 18px 0 8px; flex-wrap: wrap; }
+
+  .tips { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 6px; }
+  .tips h3 { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; font-size: 24px; margin: 14px 0 6px; }
+  .tips ul { margin: 0; padding-left: 20px; color: var(--ink); }
+  .tips li { margin: 6px 0; }
+
+  .timer {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    z-index: 10;
+  }
+  .timer-in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .clock { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; font-size: 34px; min-width: 76px; font-variant-numeric: tabular-nums; }
+  .clock.ready { color: var(--done); }
+  .rests { display: flex; gap: 8px; }
+  .rest {
+    appearance: none;
+    border: 1.5px solid var(--bg);
+    background: transparent;
+    color: var(--bg);
+    border-radius: 999px;
+    min-width: 54px; height: 44px;
+    padding: 0 12px;
+    font: inherit; font-weight: 600; font-size: 15px;
+    cursor: pointer;
+  }
+  .rest.stop { border-color: transparent; text-decoration: underline; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .set { transition: background 0.12s ease, border-color 0.12s ease; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Muscle plan</h1>
+    <p class="sub">Upper / lower split, four days a week. Tap a circle when a set is done.</p>
+  </header>
+
+  <nav class="tabs" aria-label="Workout days">
+    <div class="tabs-inner" role="tablist" id="tabs"></div>
+  </nav>
+
+  <main id="day" role="tabpanel"></main>
+
+  <section class="tips" aria-labelledby="tips-h">
+    <h3 id="tips-h">Rules that make it work</h3>
+    <ul>
+      <li>When you hit the top of the rep range on every set, add a little weight next time.</li>
+      <li>Stop most sets with 1-3 reps left in the tank.</li>
+      <li>Rest 2-3 minutes after big lifts, 60-90 seconds after smaller ones.</li>
+      <li>Warm up with 5 minutes of light cardio and a lighter ramp-up set before your first heavy lift.</li>
+      <li>Eat enough protein, keep a small calorie surplus, and sleep 7-9 hours.</li>
+    </ul>
+  </section>
+</div>
+
+<div class="timer" role="region" aria-label="Rest timer">
+  <div class="timer-in">
+    <div class="clock" id="clock" aria-live="off">0:00</div>
+    <div class="rests">
+      <button class="rest" data-sec="60">1:00</button>
+      <button class="rest" data-sec="90">1:30</button>
+      <button class="rest" data-sec="150">2:30</button>
+      <button class="rest stop" id="stop">Clear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PLAN = [
+    { id: 'ua', day: 'Mon', name: 'Upper A', note: 'Heavier focus. Monday after work.', ex: [
+      ['Bench press (barbell or dumbbell)', 3, '6-8'],
+      ['Barbell or cable row', 3, '6-8'],
+      ['Overhead press', 3, '8-10'],
+      ['Lat pulldown', 3, '8-10'],
+      ['Triceps pushdown', 2, '10-12'],
+      ['Dumbbell curl', 2, '10-12']
+    ]},
+    { id: 'la', day: 'Wed', name: 'Lower A', note: 'Wednesday after work.', ex: [
+      ['Squat (or leg press if newer to squats)', 3, '6-8'],
+      ['Romanian deadlift', 3, '8-10'],
+      ['Walking lunge or split squat (each leg)', 2, '10'],
+      ['Leg curl', 3, '10-12'],
+      ['Standing calf raise', 3, '10-15'],
+      ['Cable crunch', 2, '10-15']
+    ]},
+    { id: 'ub', day: 'Sat', name: 'Upper B', note: 'Higher reps, more volume. Saturday.', ex: [
+      ['Incline dumbbell press', 3, '8-12'],
+      ['Seated cable row or chest-supported row', 3, '8-12'],
+      ['Lateral raise', 4, '12-15'],
+      ['Pull-up or assisted pull-up', 3, '6-10'],
+      ['Cable fly or pec deck', 2, '12-15'],
+      ['Overhead triceps extension', 2, '10-12'],
+      ['Incline or preacher curl', 2, '10-12'],
+      ['Rear delt fly', 2, '12-15']
+    ]},
+    { id: 'lb', day: 'Sun', name: 'Lower B', note: 'Sunday.', ex: [
+      ['Deadlift (or trap-bar deadlift)', 3, '5'],
+      ['Leg press or hack squat', 3, '10-12'],
+      ['Bulgarian split squat (each leg)', 2, '8-10'],
+      ['Leg extension', 3, '12-15'],
+      ['Seated calf raise', 3, '12-15'],
+      ['Hanging leg raise', 2, '10-12']
+    ]}
+  ];
+
+  var KEY = 'gym-plan-v1';
+  var state = { checks: {}, weights: {}, tab: null };
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s && typeof s === 'object') {
+          state.checks = s.checks || {};
+          state.weights = s.weights || {};
+          state.tab = s.tab || null;
+        }
+      }
+    } catch (e) { /* storage unavailable: run in memory */ }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  function defaultTab() {
+    var d = new Date().getDay(); // 0 Sun ... 6 Sat
+    var map = { 1: 'ua', 2: 'la', 3: 'la', 4: 'ub', 5: 'ub', 6: 'ub', 0: 'lb' };
+    return map[d];
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function getChecks(dayId, i, n) {
+    var c = state.checks[dayId];
+    if (!c) c = state.checks[dayId] = {};
+    if (!c[i] || c[i].length !== n) {
+      c[i] = [];
+      for (var k = 0; k < n; k++) c[i].push(false);
+    }
+    return c[i];
+  }
+
+  function renderTabs() {
+    var host = document.getElementById('tabs');
+    host.innerHTML = '';
+    PLAN.forEach(function (p) {
+      var b = el('button', 'tab');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(p.id === state.tab));
+      b.appendChild(el('span', 'd', p.day));
+      b.appendChild(el('span', 'n', p.name));
+      b.addEventListener('click', function () {
+        state.tab = p.id; save(); render(); window.scrollTo(0, 0);
+      });
+      host.appendChild(b);
+    });
+  }
+
+  function renderDay() {
+    var plan = PLAN.filter(function (p) { return p.id === state.tab; })[0];
+    var host = document.getElementById('day');
+    host.innerHTML = '';
+
+    var total = 0, done = 0;
+    plan.ex.forEach(function (e, i) {
+      var arr = getChecks(plan.id, i, e[1]);
+      total += arr.length;
+      arr.forEach(function (v) { if (v) done++; });
+    });
+
+    var head = el('div', 'day-head');
+    head.appendChild(el('h2', null, plan.name));
+    var prog = el('span', 'progress', done + ' of ' + total + ' sets done');
+    head.appendChild(prog);
+    host.appendChild(head);
+    host.appendChild(el('p', 'day-note', plan.note));
+
+    plan.ex.forEach(function (e, i) {
+      var name = e[0], nSets = e[1], reps = e[2];
+      var arr = getChecks(plan.id, i, nSets);
+      var card = el('div', 'ex');
+      if (arr.every(Boolean)) card.classList.add('complete');
+
+      var top = el('div', 'ex-top');
+      top.appendChild(el('p', 'ex-name', name));
+      top.appendChild(el('span', 'target', nSets + ' x ' + reps));
+      card.appendChild(top);
+
+      var row = el('div', 'ex-row');
+      var sets = el('div', 'sets');
+      arr.forEach(function (v, k) {
+        var b = el('button', 'set', String(k + 1));
+        b.setAttribute('aria-pressed', String(v));
+        b.setAttribute('aria-label', 'Set ' + (k + 1) + ' of ' + nSets + ', ' + name);
+        b.addEventListener('click', function () {
+          arr[k] = !arr[k];
+          save();
+          renderDay();
+          if (arr[k]) startTimerIfIdle();
+        });
+        sets.appendChild(b);
+      });
+      row.appendChild(sets);
+
+      var wt = el('div', 'wt');
+      var id = 'w-' + plan.id + '-' + i;
+      var lab = el('label', null, 'Weight');
+      lab.setAttribute('for', id);
+      var inp = document.createElement('input');
+      inp.id = id;
+      inp.type = 'text';
+      inp.inputMode = 'decimal';
+      inp.placeholder = 'lbs';
+      inp.value = state.weights[name] || '';
+      inp.addEventListener('input', function () {
+        state.weights[name] = inp.value;
+        save();
+      });
+      wt.appendChild(lab);
+      wt.appendChild(inp);
+      row.appendChild(wt);
+
+      card.appendChild(row);
+      host.appendChild(card);
+    });
+
+    var actions = el('div', 'actions');
+    var reset = el('button', 'btn', 'Clear checkmarks for ' + plan.name);
+    reset.addEventListener('click', function () {
+      state.checks[plan.id] = {};
+      save();
+      renderDay();
+    });
+    actions.appendChild(reset);
+    host.appendChild(actions);
+  }
+
+  function render() { renderTabs(); renderDay(); }
+
+  /* Rest timer */
+  var clock = document.getElementById('clock');
+  var timer = null, remaining = 0, lastLen = 90;
+
+  function fmt(s) {
+    var m = Math.floor(s / 60), r = s % 60;
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+  function stopTimer() {
+    if (timer) clearInterval(timer);
+    timer = null; remaining = 0;
+    clock.textContent = '0:00';
+    clock.classList.remove('ready');
+  }
+  function startTimer(sec) {
+    stopTimer();
+    lastLen = sec;
+    remaining = sec;
+    clock.textContent = fmt(remaining);
+    timer = setInterval(function () {
+      remaining -= 1;
+      if (remaining <= 0) {
+        clearInterval(timer); timer = null;
+        clock.textContent = 'Go';
+        clock.classList.add('ready');
+        try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+        return;
+      }
+      clock.textContent = fmt(remaining);
+    }, 1000);
+  }
+  function startTimerIfIdle() {
+    if (!timer) startTimer(lastLen);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.rest[data-sec]'), function (b) {
+    b.addEventListener('click', function () { startTimer(parseInt(b.getAttribute('data-sec'), 10)); });
+  });
+  document.getElementById('stop').addEventListener('click', stopTimer);
+
+  load();
+  if (!state.tab || !PLAN.some(function (p) { return p.id === state.tab; })) state.tab = defaultTab();
+  render();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* offline mode unavailable */ });
+    });
+  }
+})();
+</script>
+</body>
+</html>
